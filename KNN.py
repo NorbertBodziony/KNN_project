@@ -31,12 +31,13 @@ class knn :
        self.data,self.label=np.array_split(learning_data,[4],axis=1)
        self.label=np.array(self.label).tolist()
     def predict(self, test_data):
-        distance_data=np.zeros(shape=(14,134))
 
-        size=[i for i in range(0,134)]
+        distance_data=np.zeros(shape=(test_data.shape[0],self.data.shape[0]))
+        size=[i for i in range(0,self.data.shape[0])]
+        if(self.K>len(size)):
+                return -1
 
         data_test, label_test = np.array_split(test_data, [4], axis=1)
-
         for i in range(0,data_test.shape[0]):
             for j in range(0,self.data.shape[0]):
 
@@ -58,6 +59,8 @@ class knn :
     def score(self,test_data):
         data_test, label_test = np.array_split(test_data, [4], axis=1)
         label_result=self.predict(test_data)
+        if(label_result==-1):
+            return "K is too big"
         label_test=np.array(label_test).tolist()
         label_result=np.array(label_result).tolist()
 
@@ -70,6 +73,6 @@ class knn :
 
 learning_data=np.array(pandas.read_csv("iris.data.learning"))
 test_data=np.array(pandas.read_csv("iris.data.test"))
-a=knn(5,learning_data)
+a=knn(2,learning_data)
 
 print(a.score(test_data))
