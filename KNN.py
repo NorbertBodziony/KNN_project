@@ -13,3 +13,7 @@ class knn :
 
     def score(self,test_data:list):
         pass
+
+
+learning_data=pandas.read_csv("iris.data.learning")
+print(learning_data)
