@@ -7,72 +7,84 @@ from collections import defaultdict
 import pandas
 from statistics import mode
 
+
 def most_common(L):
-  # get an iterable of (item, iterable) pairs
-  SL = sorted((x, i) for i, x in enumerate(L))
-  # print 'SL:', SL
-  groups = itertools.groupby(SL, key=operator.itemgetter(0))
-  # auxiliary function to get "quality" for an item
-  def _auxfun(g):
-    item, iterable = g
-    count = 0
-    min_index = len(L)
-    for _, where in iterable:
-      count += 1
-      min_index = min(min_index, where)
-    # print 'item %r, count %r, minind %r' % (item, count, min_index)
-    return count, -min_index
-  # pick the highest-count/earliest item
-  return max(groups, key=_auxfun)[0]
+    # get an iterable of (item, iterable) pairs
+    SL = sorted((x, i) for i, x in enumerate(L))
+    # print 'SL:', SL
+    groups = itertools.groupby(SL, key=operator.itemgetter(0))
 
-class knn :
-    def __init__(self,K,learning_data):
-       self.K=K
-       self.data,self.label=np.array_split(learning_data,[4],axis=1)
-       self.label=np.array(self.label).tolist()
-    def predict(self, test_data):
+    # auxiliary function to get "quality" for an item
+    def _auxfun(g):
+        item, iterable = g
+        count = 0
+        min_index = len(L)
+        for _, where in iterable:
+            count += 1
+            min_index = min(min_index, where)
+        # print 'item %r, count %r, minind %r' % (item, count, min_index)
+        return count, -min_index
 
-        distance_data=np.zeros(shape=(test_data.shape[0],self.data.shape[0]))
-        size=[i for i in range(0,self.data.shape[0])]
-        if(self.K>len(size)):
-                return -1
+    # pick the highest-count/earliest item
+    return max(groups, key=_auxfun)[0]
+
+
+class knn:
+    def __init__(self, k: int, learning_data: np):
+        if not isinstance(k,int):
+            raise TypeError("k type is not int")
+        self.k = k
+        self.data, self.label = np.array_split(learning_data, [4], axis=1)
+        self.label = np.array(self.label).tolist()
+
+    def predict(self, test_data: np):
+
+        distance_data = np.zeros(shape=(test_data.shape[0], self.data.shape[0]))
+        size = [i for i in range(0, self.data.shape[0])]
+        if (self.k > len(size)):
+            return -1
 
         data_test, label_test = np.array_split(test_data, [4], axis=1)
-        for i in range(0,data_test.shape[0]):
-            for j in range(0,self.data.shape[0]):
+        for i in range(0, data_test.shape[0]):
+            for j in range(0, self.data.shape[0]):
+                distance_data[i][j] = distance.euclidean(data_test[i], self.data[j])
 
-                distance_data[i][j]=distance.euclidean(data_test[i],self.data[j])
-
-
-        l=[]
-        ret=[]
-        for j in range(0,data_test.shape[0]):
+        l = []
+        ret = []
+        for j in range(0, data_test.shape[0]):
             dict_distance_data = dict(zip(size, distance_data[j]))
             sort_dict_distance_data = list(sorted(dict_distance_data.items(), key=operator.itemgetter(1)))
-            for i in range(0,self.K):
+            for i in range(0, self.k):
                 l.append((self.label[sort_dict_distance_data[i][0]]))
 
             ret.append(most_common(l))
 
             l.clear()
         return ret
-    def score(self,test_data):
+
+    def score(self, test_data: np):
         data_test, label_test = np.array_split(test_data, [4], axis=1)
-        label_result=self.predict(test_data)
-        if(label_result==-1):
-            return "K is too big"
-        label_test=np.array(label_test).tolist()
-        label_result=np.array(label_result).tolist()
+        label_result = self.predict(test_data)
+        if (label_result == -1):
+            return "k is too big"
+        label_test = np.array(label_test).tolist()
+        label_result = np.array(label_result).tolist()
 
-        result=0
+        result = 0
 
-        for i in range(0,len(label_result)):
-            if(label_result[i][0]==label_test[i][0]):
-                    result+=1
-        return result/len(label_result)
+        for i in range(0, len(label_result)):
+            if (label_result[i][0] == label_test[i][0]):
+                result += 1
+        return result, len(label_result)
 
-learning_data=np.array(pandas.read_csv("iris.data.learning"))
-test_data=np.array(pandas.read_csv("iris.data.test"))
-a=knn(2,learning_data)
+try:
+    learning_data = np.array(pandas.read_csv("iris.data.learning",engine='c',header=None))
+    test_data = np.array(pandas.read_csv("iris.data.test",header=None))
 
+except:
+    print("error in reading a file")
+try:
+    a = knn(3, learning_data)
+except TypeError:
+    print("Wrong Type")
 print(a.score(test_data))
