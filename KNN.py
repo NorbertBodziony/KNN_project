@@ -38,6 +38,9 @@ class knn:
         self.label = np.array(self.label).tolist()
 
     def predict(self, test_data: np):
+        if(test_data.shape[1]-1<self.data.shape[1]|(not isinstance(test_data,np.ndarray))):
+            raise TypeError("Array too small or is not NdArray")
+
 
         distance_data = np.zeros(shape=(test_data.shape[0], self.data.shape[0]))
         size = [i for i in range(0, self.data.shape[0])]
@@ -80,11 +83,11 @@ class knn:
 try:
     learning_data = np.array(pandas.read_csv("iris.data.learning",engine='c',header=None))
     test_data = np.array(pandas.read_csv("iris.data.test",header=None))
-
+    data_test, label_test = np.array_split(test_data, [4], axis=1)
 except:
     print("error in reading a file")
 try:
-    a = knn(3, learning_data)
+    a = knn(2, learning_data)
 except TypeError:
     print("Wrong Type")
 print(a.score(test_data))
