@@ -8,8 +8,10 @@ import pandas
 from statistics import mode
 
 
-def most_common(L):
+def most_common(L:list):
     # get an iterable of (item, iterable) pairs
+    if not isinstance(L,list):
+        raise TypeError("wrong type")
     SL = sorted((x, i) for i, x in enumerate(L))
     # print 'SL:', SL
     groups = itertools.groupby(SL, key=operator.itemgetter(0))
@@ -83,7 +85,7 @@ class knn:
 try:
     learning_data = np.array(pandas.read_csv("iris.data.learning",engine='c',header=None))
     test_data = np.array(pandas.read_csv("iris.data.test",header=None))
-    data_test, label_test = np.array_split(test_data, [4], axis=1)
+
 except:
     print("error in reading a file")
 try:
