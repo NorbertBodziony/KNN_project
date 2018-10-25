@@ -5,6 +5,7 @@ import operator
 from scipy.spatial import distance
 from collections import defaultdict
 import pandas
+from math import fabs
 from scipy.stats import pearsonr
 from statistics import mode
 
@@ -96,7 +97,8 @@ class knn:
 
             l.clear()
         return ret
-    def predict_pearson(self, test_data: np):
+
+    def predict_manhatan(self, test_data: np):
         if test_data.shape[1] - 1 < self.data.shape[1] | (not isinstance(test_data, np.ndarray)):
             raise TypeError("Array too small or is not NdArray")
 
@@ -106,7 +108,10 @@ class knn:
         data_test, label_test = np.array_split(test_data, [4], axis=1)
         for i in range(0, data_test.shape[0]):
             for j in range(0, self.data.shape[0]):
-                a,distance_data[i][j] = pearsonr(self.data[j], data_test[i])
+                sum = 0
+                for k in range(4):
+                    sum = sum + fabs(self.data[j][k] - test_data[i][k])
+                distance_data[i][j]=sum
         size = [i for i in range(0, self.data.shape[0])]
 
         l = []
@@ -151,6 +156,21 @@ class knn:
                    result += 1
            return result, len(label_result)
 
+    def score_manhatan(self, test_data: np):
+        data_test, label_test = np.array_split(test_data, [4], axis=1)
+        label_result = self.predict_manhatan(test_data)
+        if label_result == -1:
+            return "k is too big"
+        label_test = np.array(label_test).tolist()
+        label_result = np.array(label_result).tolist()
+
+        result = 0
+
+        for i in range(0, len(label_result)):
+            if label_result[i][0] == label_test[i][0]:
+                result += 1
+        return result, len(label_result)
+
 try:
     learning_data = np.array(pandas.read_csv("iris.data.learning", header=None))
     test_data = np.array(pandas.read_csv("iris.data.test", header=None))
@@ -158,8 +178,8 @@ except:
     print("error in reading a file")
 
 try:
-    a = knn(10, learning_data)
-    print(a.score_pearson(test_data))
+    a = knn(1, learning_data)
+    print(a.score_manhatan(test_data))
 except TypeError:
     print("Error in creating object")
 
